@@ -30,27 +30,14 @@ abstract class ZohoApi
             $uri = $this->createBaseUri($tableName, $workspace);
             $parameters = $this->createParameterString($params);
 
-            $options['headers'] = $this->createHeaders();
             $options['form_params'] = ['ZOHO_IMPORT_DATA' => json_encode($payload)];
 
             $client = new Client();
             $response = $client->request('POST', $uri . '?' . $parameters, $options);
 
             return $response;
-
-//            dd($response);
-
-//            $logger->reportSuccess($endpoint, $payload, $response);
-
-//            return $this->handleResponse($response);
         } catch (ClientException $exception) {
-//            $logger->reportFailure($endpoint, $payload, $exception->getMessage());
-
-//            throw new FortnoxException($exception);
-
-            
             $responseContent = $exception->getResponse()->getBody()->getContents();
-
             $errorObject = json_decode($responseContent);
 
             dd($errorObject->response->error->message);
@@ -71,39 +58,6 @@ abstract class ZohoApi
         $email = config('zoho.email');
 
         return concat_uri($baseUri, $email, $workspace, $tableName);
-    }
-
-    /**
-     * Compiles the header information with type, security etc
-     *
-     * @return array
-     */
-    private function createHeaders()
-    {
-        return [
-//            'Content-Type' => 'multipart/form-data',
-        ];
-    }
-
-    /**
-     * Converts an API respons to a return object depending on content type
-     *
-     * @param Response $response
-     *
-     * @return FortnoxApiResponse
-     */
-    private function handleResponse(Response $response)
-    {
-        $return = new FortnoxApiResponse();
-        $content_type = $response->getHeader('Content-Type');
-
-        if (in_array('application/json', $content_type)) {
-            $return = json_decode($response->getBody());
-        } else if (in_array('application/pdf', $content_type)) {
-            $return->PDFContents = $response->getBody()->getContents();
-        }
-
-        return $return;
     }
 
     /**
